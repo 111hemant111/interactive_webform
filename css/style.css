@@ -4,6 +4,12 @@
 
 @import url('https://fonts.googleapis.com/css?family=Nunito|Roboto+Mono');
 
+:root {
+    --themeColor: #ffb626; 
+    --transpColor: rgba(255, 182, 38, 0.5);
+    --darkShade: #ed9d00;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -17,7 +23,7 @@ button {
 body {
   font: 1em/1.5;
   color: rgba(6, 49, 68, 0.9);
-	background: #CDE0FB;
+	background: #f2b12e;
 }
 
 header {
@@ -40,7 +46,7 @@ a {
 
 form {
 	padding: .875em 1.875em 1.875em;
-	background: #9BBEEF;
+	background: #ffbd66;
 	border: 2px solid rgba(8, 63, 87, 0.7);
 	border-radius: 3px;
 }
