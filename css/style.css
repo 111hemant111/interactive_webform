@@ -2,7 +2,7 @@
   Base Element Styles
 ==================================== */
 
-@import url('https://fonts.googleapis.com/css?family=Nunito|Roboto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Nunito');
 
 :root {
     --themeColor: #ffb626; 
@@ -15,7 +15,6 @@
 }
 
 body,
-input,
 button {
 	font-family: 'Nunito', sans-serif;
 }
@@ -86,9 +85,15 @@ label {
 	margin-bottom: .5em;
 }
 
-input,
+input {
+	margin-bottom: 1.125em;	
+}
+
 select {
 	margin-bottom: 1.125em;	
+    height: 25px;
+    font-size: 1em;
+    text-align-last: center;
 }
 
 input {
@@ -128,9 +133,8 @@ button:hover {
 }
 
 input, 
-select, 
 option {
-	font-family: 'roboto', sans-serif;
+	font-family: 'Nunito', sans-serif;
 }
 
 /* ================================= 
@@ -172,6 +176,12 @@ option {
 .disabled {
    color: grey;
 }
+
+.error {
+    border: 2px solid rgb(240, 70, 58);
+    color: red;
+}
+
 
 /* ================================= 
   Media Queries
