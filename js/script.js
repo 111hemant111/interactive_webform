@@ -1,6 +1,7 @@
 let totalCost = 0;
 let focusCheck = false;
 let registerClicked = false;
+let errorPresent = 0;
 
 $('#name').focus(); //Set focus to Name field
 $('#other-title').hide(); //Hide Other Job Role input field
@@ -44,6 +45,12 @@ function setPlaceHolders()
 //Create but hide error labels
 function createDynamicLabels()
 {
+    //Dynamic total
+    const thanks = $('<label id="thanks">Thanks for the registration! </label>');
+    $('form[action="index.html"]').before(thanks);
+    $('#thanks').css({"font-size": "2em", "color": "rgb(41, 68, 82)", "text-align": "center"});
+    $('#thanks').hide();
+    
     //Dynamic total
     const total = $('<label>Total: </label>');
     $('.activities label').eq(6).after(total);
@@ -181,7 +188,7 @@ function hidePaymentOpts(selected)
 //Check validity of the name
 function isValidName (name)
 {
-    const nameRegEx = /[a-zA-Z ]/;
+    const nameRegEx = /^[a-zA-Z ]+$/;
     return nameRegEx.test(name);
 }
 
@@ -229,17 +236,16 @@ function isValidZip (zip)
 }
 
 //Check validity of Other Job Title
-function isValidOtherTitle ()
+function isValidOtherTitle (otherTitle)
 {
-    const otherRegEx = /[a-zA-Z ]/;
-    const otherTitle = $('#other-title').text();
-    return (otherRegEx.test(otherTitle) && $('#other-title').text() !== '');
+    const otherRegEx = /^[a-zA-Z ]+$/;
+    return (otherRegEx.test(otherTitle));
 }
 
 //Check validity of theme
 function isValidTheme()
 {
-    return !($('#design option').eq(0).text() === 'Select Theme');
+    return !($('#design').val() === 'Select Theme');
 }
 
 //Dynamically slideDown name error label if empty or invalid
@@ -253,6 +259,7 @@ function displayNameError (name)
         $('#name').addClass("error");
         $('#enter-name').text('Please enter a name!');
         $('#enter-name').slideDown();
+        errorPresent++;
     } 
     //For incorrect name entered
     else if (!isValidName(name))
@@ -260,6 +267,7 @@ function displayNameError (name)
         $('#name').addClass("error");
         $('#enter-name').text('Please enter a valid name!');
         $('#enter-name').slideDown();
+        errorPresent++;
     }
     registerClicked = false;
 }
@@ -275,6 +283,7 @@ function displayEmailError (email)
         $('#mail').addClass("error");
         $('#enter-email').text('Please enter an email id!');
         $('#enter-email').slideDown();
+        errorPresent++;
     }
     //For incorrect email entered
     else if (!isValidEmail(email))
@@ -282,6 +291,7 @@ function displayEmailError (email)
         $('#mail').addClass("error");
         $('#enter-email').text('Please enter a valid email id!');
         $('#enter-email').slideDown();
+        errorPresent++;
     }
     registerClicked = false;
 }
@@ -297,13 +307,15 @@ function displayOtherTitleError (otherTitle)
         $('#other-title').addClass("error");
         $('#enter-otherTitle').text("Please enter a job title!");
         $('#enter-otherTitle').slideDown();
+        errorPresent++;
     }
     //For incorrect other-title entered
-    else if ($('#title').val() === 'other' && !isValidOtherTitle())
+    else if ($('#title').val() === 'other' && !isValidOtherTitle(otherTitle))
     {
         $('#other-title').addClass("error");
         $('#enter-otherTitle').text('Please enter a valid job title!');
         $('#enter-otherTitle').slideDown();
+        errorPresent++;
     }
     registerClicked = false;
 }
@@ -311,19 +323,38 @@ function displayOtherTitleError (otherTitle)
 function displayThemeError ()
 {
     if (!isValidTheme())
-        $('#enter-theme').slideDown();
+        {
+            $('#enter-theme').slideDown();
+            errorPresent++;
+        }
 }
 
 function displayActError()
 {
     if (!isValidActivities())
-        $('#select-act').slideDown();
+        {
+            $('#select-act').slideDown();
+            errorPresent++;
+        }
 }
 
-function displayCreditError()
+function displayCreditError(ccNum, cvv, zip)
 {
-    if(!isValidCredit())
-        $('#error-cc').slideDown();
+    if(!isValidCredit(ccNum, cvv, zip))
+        {
+            $('#error-cc').slideDown();
+            errorPresent++;
+        }
+}
+
+function resetCreditDetails()
+{
+    $('#cc-num').removeClass("error");
+    $('#cc-num').val('');
+    $('#zip').removeClass("error");
+    $('#zip').val('');
+    $('#cvv').removeClass("error");
+    $('#cvv').val('');
 }
 
 //////////////////
@@ -375,11 +406,12 @@ $('.payment-info').on('change', (e) => {
 
 $('form').submit((e) => 
 {    
+    errorPresent = 0;
     e.preventDefault();
     registerClicked = true; //Flag to scroll up only when Register is clicked
     const name = $('#name').val();
     const email = $('#mail').val();
-    const otherTitle = $('#other-title')
+    const otherTitle = $('#other-title').val();
     const ccNum = $('#cc-num').val();
     const cvv = $('#cvv').val();
     const zip = $('#zip').val();
@@ -390,16 +422,67 @@ $('form').submit((e) =>
     displayOtherTitleError(otherTitle);
     displayThemeError();
     displayActError();
-    displayCreditError();
     
-    //No error labels for these, only styling
-    if (!isValidCcNum())
-        $('#cc-num').addClass("error");
-    if (!isValidZip())
-        $('#zip').addClass("error");
-    if (!isValidCvv())
-        $('#cvv').addClass("error");
+    //If Credit Card payment selected
+    if ($('#payment').val() === 'credit card')
+        {
+            displayCreditError(ccNum, cvv, zip);
+    
+            //No error labels for these, only styling
+            if (!isValidCcNum(ccNum))
+                $('#cc-num').addClass("error");
+            else 
+                $('#cc-num').removeClass("error");
+            if (!isValidZip(zip))
+                $('#zip').addClass("error");
+            else
+                $('#zip').removeClass("error");
+            if (!isValidCvv(cvv))
+                $('#cvv').addClass("error");
+            else
+                $('#cvv').removeClass("error");
+        }
+    else
+        resetCreditDetails();
+    
+    
+    //If no errors present, reload
+    let i;
+    
+    for (i = 0; i < $('*').length && errorPresent === 0; i++)
+        {
+            if ($('*').eq(i).attr("class") === "error")
+                {
+                    errorPresent = true;
+                    break;
+                }
+        }
+    
+    if (!errorPresent)
+        registered();
+            
+        
 });
+
+///Running code after reload snippet Credits to:////
+//https://stackoverflow.com/users/4858238/iangabes//
+
+function registered()
+{
+    location.hash = 'reload';
+    location.reload();
+}
+document.addEventListener("DOMContentLoaded", function(event) 
+{ 
+    if(window.location.hash === "#reload"){
+    		location.hash = 'alpha'; location.hash = '#top';
+            $('#thanks').slideDown().delay(5000).slideUp();
+    }
+});
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+
 
 //Hide error label and styling on click
 $('#name').click((e) => {
@@ -429,6 +512,15 @@ $('#other-title').click((e) => {
 });
 
 //Hide error label and styling on click
+$('#title').click((e) => {
+    if ($('#other-title').attr("class") === "error")
+        {
+            $('#other-title').removeClass("error");
+            $('#enter-otherTitle').slideUp();
+        }
+});
+
+//Hide error label and styling on click
 $('#design').click((e) => {
                 $('#enter-theme').slideUp();
 });
@@ -439,7 +531,7 @@ $('.activities label').click((e) => {
 });
 
 //Hide error label and styling on click
-$('.credit-card').click((e) => {
+$('.credit-card').parent().click((e) => {
                 $('#error-cc').slideUp();
 });
 
@@ -490,4 +582,9 @@ $('#other-title').focusout((e) => {
     setTimeout(function() { 
         const otherTitle = $('#other-title').val();
         displayOtherTitleError(otherTitle);}, 200);
+});
+
+$('#payment').click((e) => {
+    if ($('#payment').val() !== 'credit card')
+        resetCreditDetails();
 });
