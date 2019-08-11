@@ -35,7 +35,7 @@ hidePaymentOpts(0); //Hide payment ops except CC
 function setPlaceHolders()
 {
     $('#name').attr("placeholder", "e.g. Hemant Kuruva");
-    $('#mail').attr("placeholder", "e.g. hemant_kuruva@treehouse.com");
+    $('#mail').attr("placeholder", "e.g. hemant_kuruva@example.com");
     $('#cc-num').attr("placeholder", "e.g. 1234567890123456");
     $('#zip').attr("placeholder", "e.g. 12345");
     $('#cvv').attr("placeholder", "e.g. 123");
