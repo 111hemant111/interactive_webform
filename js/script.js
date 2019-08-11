@@ -195,7 +195,7 @@ function isValidName (name)
 //Check validity of email
 function isValidEmail (email)
 {
-    const emailRegEx = /^\w+@\w+\.com$/;
+    const emailRegEx = /^\w+@\w+\.\w+$/;
     return emailRegEx.test(email);
 }
 
