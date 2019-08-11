@@ -45,10 +45,10 @@ function setPlaceHolders()
 //Create but hide error labels
 function createDynamicLabels()
 {
-    //Dynamic total
+    //Thanks label for successful registration
     const thanks = $('<label id="thanks">Thanks for the registration! </label>');
     $('form[action="index.html"]').before(thanks);
-    $('#thanks').css({"font-size": "2em", "color": "rgb(41, 68, 82)", "text-align": "center"});
+    $('#thanks').css({"font-size": "3em", "color": "rgb(41, 68, 82)", "text-align": "center"});
     $('#thanks').hide();
     
     //Dynamic total
@@ -86,11 +86,23 @@ function createDynamicLabels()
     $('#select-act').hide();
     $('#select-act').css("color","red");
     
-    //Credit card error
-    const creditCard = $('<label id="error-cc">Please check credit card details!</label>');
-    $('#payment').after(creditCard);
-    $('#error-cc').hide();
-    $('#error-cc').css("color","red");
+    //Credit card number error
+    const ccNum = $('<label id="error-ccNum">Please check credit card number!</label>');
+    $('#cc-num').before(ccNum);
+    $('#error-ccNum').hide();
+    $('#error-ccNum').css("color","red");
+    
+    //Zip Code error
+    const zip = $('<label id="error-zip">Please check Zip Code!</label>');
+    $('#zip').before(zip);
+    $('#error-zip').hide();
+    $('#error-zip').css({"color":"red", "font-size": "0.85em", "padding-bottom": "0.13em", "padding-top": "0.20em"});
+    
+    //CVV error
+    const cvv = $('<label id="error-cvv">Please check CVV!</label>');
+    $('#cvv').before(cvv);
+    $('#error-cvv').hide();
+    $('#error-cvv').css("color","red");
 }
 
 //Show only JS Puns colors
@@ -206,12 +218,6 @@ function isValidActivities ()
         return true;
     else
         return false;
-}
-
-//Check validity of Credit Card
-function isValidCredit (ccNum, cvv, zip)
-{
-    return (isValidCcNum(ccNum) && isValidCvv(cvv) && isValidZip(zip));
 }
 
 //Check validity of Credit Card Number
@@ -338,13 +344,37 @@ function displayActError()
         }
 }
 
-function displayCreditError(ccNum, cvv, zip)
+function displayCcNumError(ccNum)
 {
-    if(!isValidCredit(ccNum, cvv, zip))
-        {
-            $('#error-cc').slideDown();
-            errorPresent++;
-        }
+    //For no ccNum entered
+    if (!isValidCcNum(ccNum))
+    {
+        $('#cc-num').addClass("error");
+        $('#error-ccNum').slideDown();
+        errorPresent++;
+    } 
+}
+
+function displayZipError(zip)
+{
+    //For no ccNum entered
+    if (!isValidZip(zip))
+    {
+        $('#zip').addClass("error");
+        $('#error-zip').slideDown();
+        errorPresent++;
+    } 
+}
+
+function displayCvvError(cvv)
+{
+    //For no ccNum entered
+    if (!isValidCvv(cvv))
+    {
+        $('#cvv').addClass("error");
+        $('#error-cvv').slideDown();
+        errorPresent++;
+    } 
 }
 
 function resetCreditDetails()
@@ -423,24 +453,13 @@ $('form').submit((e) =>
     displayThemeError();
     displayActError();
     
+    
     //If Credit Card payment selected
     if ($('#payment').val() === 'credit card')
         {
-            displayCreditError(ccNum, cvv, zip);
-    
-            //No error labels for these, only styling
-            if (!isValidCcNum(ccNum))
-                $('#cc-num').addClass("error");
-            else 
-                $('#cc-num').removeClass("error");
-            if (!isValidZip(zip))
-                $('#zip').addClass("error");
-            else
-                $('#zip').removeClass("error");
-            if (!isValidCvv(cvv))
-                $('#cvv').addClass("error");
-            else
-                $('#cvv').removeClass("error");
+            displayCcNumError(ccNum);
+            displayCvvError(cvv);
+            displayZipError(zip);
         }
     else
         resetCreditDetails();
@@ -476,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function(event)
 { 
     if(window.location.hash === "#reload"){
     		location.hash = 'alpha'; location.hash = '#top';
-            $('#thanks').slideDown().delay(5000).slideUp();
+            $('#thanks').slideDown().delay(2000).slideUp();
     }
 });
 
@@ -531,25 +550,11 @@ $('.activities label').click((e) => {
 });
 
 //Hide error label and styling on click
-$('.credit-card').parent().click((e) => {
-                $('#error-cc').slideUp();
-});
-
-//Hide error label and styling on click
 $('#cc-num').click((e) => {
     if ($('#cc-num').attr("class") === "error")
         {
             $('#cc-num').removeClass("error");
-            $('#cc-num').val('');
-        }
-});
-
-//Hide error label and styling on click
-$('#zip').click((e) => {
-    if ($('#zip').attr("class") === "error")
-        {
-            $('#zip').removeClass("error");
-            $('#zip').val('');
+            $('#error-ccNum').slideUp();
         }
 });
 
@@ -558,9 +563,19 @@ $('#cvv').click((e) => {
     if ($('#cvv').attr("class") === "error")
         {
             $('#cvv').removeClass("error");
-            $('#cvv').val('');
+            $('#error-cvv').slideUp();
         }
 });
+
+//Hide error label and styling on click
+$('#zip').click((e) => {
+    if ($('#zip').attr("class") === "error")
+        {
+            $('#zip').removeClass("error");
+            $('#error-zip').slideUp();
+        }
+});
+
 
 //////////////
 //FOCUS OUTS//
@@ -584,7 +599,20 @@ $('#other-title').focusout((e) => {
         displayOtherTitleError(otherTitle);}, 200);
 });
 
-$('#payment').click((e) => {
-    if ($('#payment').val() !== 'credit card')
-        resetCreditDetails();
+$('#cc-num').focusout((e) => {
+    setTimeout(function() { 
+        const ccNum = $('#cc-num').val();
+        displayCcNumError(ccNum);}, 200);
+});
+
+$('#zip').focusout((e) => {
+    setTimeout(function() { 
+        const zip = $('#zip').val();
+        displayZipError(zip);}, 200);
+});
+
+$('#cvv').focusout((e) => {
+    setTimeout(function() { 
+        const cvv = $('#cvv').val();
+        displayCvvError(cvv);}, 200);
 });
