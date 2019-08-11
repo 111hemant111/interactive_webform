@@ -1,5 +1,6 @@
 let totalCost = 0;
 let focusCheck = false;
+let registerClicked = false;
 
 $('#name').focus(); //Set focus to Name field
 $('#other-title').hide(); //Hide Other Job Role input field
@@ -9,8 +10,9 @@ setPlaceHolders(); //Example placeholders for inputs
 createDynamicLabels(); //Create labels for validation feedback and dynamic total
 changeColorList(); //Change the color options from Non-JS format to JS format.
 
+//Modifying Paypal text
 $('fieldset:nth-child(4) > div:nth-child(6)').text("We'll take you to Paypal's site to set up your billing information, when you click “Register” below.");
-
+//Modifying Bitcoin text
 $('fieldset:nth-child(4) > div:nth-child(7)').text("We'll take you to the Coinbase site to set up your billing information. Due to the nature of exchanging Bitcoin, all Bitcoin transactions will be final.");
 
 //$('fieldset:nth-child(4) > div p').text("");
@@ -29,6 +31,7 @@ hidePaymentOpts(0); //Hide payment ops except CC
 //FUNCTIONS//
 /////////////
 
+//Set placeholders in input elements
 function setPlaceHolders()
 {
     $('#name').attr("placeholder", "e.g. Hemant Kuruva");
@@ -38,6 +41,7 @@ function setPlaceHolders()
     $('#cvv').attr("placeholder", "e.g. 123");
 }
 
+//Create but hide error labels
 function createDynamicLabels()
 {
     //Dynamic total
@@ -47,9 +51,21 @@ function createDynamicLabels()
     
     //Name error
     const enterName = $('<label id="enter-name">Please enter a valid name!</label>');
-    $('#name').after(enterName);
+    $('label[for="name"]').after(enterName);
     $('#enter-name').hide();
     $('#enter-name').css("color","red");
+    
+    //Email error
+    const enterEmail = $('<label id="enter-email">Please enter a valid email id!</label>');
+    $('label[for="mail"]').after(enterEmail);
+    $('#enter-email').hide();
+    $('#enter-email').css("color","red");
+    
+    //Other title error
+    const enterOtherTitle = $('<label id="enter-otherTitle">Please enter a job title!</label>');
+    $('#title').after(enterOtherTitle);
+    $('#enter-otherTitle').hide();
+    $('#enter-otherTitle').css("color","red");
     
     //Theme error
     const enterTheme = $('<label id="enter-theme">Please select a design!</label>');
@@ -226,6 +242,90 @@ function isValidTheme()
     return !($('#design option').eq(0).text() === 'Select Theme');
 }
 
+//Dynamically slideDown name error label if empty or invalid
+function displayNameError (name)
+{
+    if (registerClicked)
+        location.hash = 'alpha'; location.hash = '#top';
+    //For no name entered
+    if (name.length === 0)
+    {
+        $('#name').addClass("error");
+        $('#enter-name').text('Please enter a name!');
+        $('#enter-name').slideDown();
+    } 
+    //For incorrect name entered
+    else if (!isValidName(name))
+    {
+        $('#name').addClass("error");
+        $('#enter-name').text('Please enter a valid name!');
+        $('#enter-name').slideDown();
+    }
+    registerClicked = false;
+}
+
+//Dynamically slideDown email error label if empty or invalid
+function displayEmailError (email)
+{
+    if (registerClicked)
+        location.hash = 'alpha'; location.hash = '#top';
+    //For no email entered
+    if (email.length === 0)
+    {
+        $('#mail').addClass("error");
+        $('#enter-email').text('Please enter an email id!');
+        $('#enter-email').slideDown();
+    }
+    //For incorrect email entered
+    else if (!isValidEmail(email))
+    {
+        $('#mail').addClass("error");
+        $('#enter-email').text('Please enter a valid email id!');
+        $('#enter-email').slideDown();
+    }
+    registerClicked = false;
+}
+
+//Dynamically slideDown other title error label if empty or invalid
+function displayOtherTitleError (otherTitle)
+{
+    if (registerClicked)
+        location.hash = 'alpha'; location.hash = '#top';
+    //For no other title entered
+    if ($('#title').val() === 'other' &&  otherTitle.length === 0)
+    {
+        $('#other-title').addClass("error");
+        $('#enter-otherTitle').text("Please enter a job title!");
+        $('#enter-otherTitle').slideDown();
+    }
+    //For incorrect other-title entered
+    else if ($('#title').val() === 'other' && !isValidOtherTitle())
+    {
+        $('#other-title').addClass("error");
+        $('#enter-otherTitle').text('Please enter a valid job title!');
+        $('#enter-otherTitle').slideDown();
+    }
+    registerClicked = false;
+}
+
+function displayThemeError ()
+{
+    if (!isValidTheme())
+        $('#enter-theme').slideDown();
+}
+
+function displayActError()
+{
+    if (!isValidActivities())
+        $('#select-act').slideDown();
+}
+
+function displayCreditError()
+{
+    if(!isValidCredit())
+        $('#error-cc').slideDown();
+}
+
 //////////////////
 //////EVENTS//////
 //////////////////
@@ -234,7 +334,8 @@ function isValidTheme()
 $('#title').on('change', (e) => 
 { 
     if ($('#title').val() === "other")
-            $('#other-title').slideDown();
+        $('#other-title').slideDown();
+    
     else
         $('#other-title').slideUp();
 });
@@ -268,11 +369,14 @@ $('.payment-info').on('change', (e) => {
     hidePaymentOpts(indexOfPayment);
 });
 
+///////////////////
+//Form submission//
+///////////////////
+
 $('form').submit((e) => 
-{   
-    
+{    
     e.preventDefault();
-    
+    registerClicked = true; //Flag to scroll up only when Register is clicked
     const name = $('#name').val();
     const email = $('#mail').val();
     const otherTitle = $('#other-title')
@@ -281,107 +385,65 @@ $('form').submit((e) =>
     const zip = $('#zip').val();
     
     //Conditional error messages
-    if (name.length === 0)
-    {
-        $('#name').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#name').val("Please enter a name!");
-    } 
-    else if (!isValidName(name))
-    {
-        $('#enter-theme').slideDown(1000)
-            $('#design').click((e) => {
-                $('#enter-theme').slideUp();
-            });
-        
-        $('#name').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#name').val("Please enter a valid name!");
-    }
+    displayNameError(name);
+    displayEmailError(email);
+    displayOtherTitleError(otherTitle);
+    displayThemeError();
+    displayActError();
+    displayCreditError();
     
-    if (email.length === 0)
-    {
-        $('#mail').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#mail').val("Please enter an email id!");
-    }
-    else if (!isValidEmail(email));
-    {
-        $('#mail').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#mail').val("Please enter a valid email id!");
-    }
-    
-    if ($('#title').val() === 'other' &&  otherTitle.length === 0)
-    {
-        $('#other-title').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#other-title').val("Please enter a job title!");
-    }
-    else if ($('#title').val() === 'other' && !isValidOtherTitle())
-    {
-        $('#other-title').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#other-title').val('Please enter a valid job title!');
-    }
-    
-    if (!isValidTheme())
-        {
-            $('#enter-theme').slideDown(1000)
-            $('#design').click((e) => {
-                $('#enter-theme').slideUp();
-            });
-        }
-    
-    if (!isValidActivities())
-        {
-            $('#select-act').slideDown(1000)
-            $('.activities label').click((e) => {
-                $('#select-act').slideUp();
-            });
-        }
-    
-    if(!isValidCredit())
-        {
-            $('#error-cc').slideDown(1000)
-            $('.credit-card').click((e) => {
-                $('#error-cc').slideUp();
-            });
-        }
-    
+    //No error labels for these, only styling
     if (!isValidCcNum())
         $('#cc-num').addClass("error");
     if (!isValidZip())
         $('#zip').addClass("error");
     if (!isValidCvv())
         $('#cvv').addClass("error");
-
 });
 
+//Hide error label and styling on click
 $('#name').click((e) => {
     if ($('#name').attr("class") === "error")
         {
             $('#name').removeClass("error");
-            $('#name').val('');
+            $('#enter-name').slideUp();
         }
 });
 
+//Hide error label and styling on click
 $('#mail').click((e) => {
     if ($('#mail').attr("class") === "error")
         {
             $('#mail').removeClass("error");
-            $('#mail').val('');
+            $('#enter-email').slideUp();
         }
 });
 
+//Hide error label and styling on click
 $('#other-title').click((e) => {
     if ($('#other-title').attr("class") === "error")
         {
             $('#other-title').removeClass("error");
-            $('#other-title').val('');
+            $('#enter-otherTitle').slideUp();
         }
 });
 
+//Hide error label and styling on click
+$('#design').click((e) => {
+                $('#enter-theme').slideUp();
+});
+
+//Hide error label and styling on click
+$('.activities label').click((e) => {
+                $('#select-act').slideUp();
+});
+
+//Hide error label and styling on click
+$('.credit-card').click((e) => {
+                $('#error-cc').slideUp();
+});
+
+//Hide error label and styling on click
 $('#cc-num').click((e) => {
     if ($('#cc-num').attr("class") === "error")
         {
@@ -390,6 +452,7 @@ $('#cc-num').click((e) => {
         }
 });
 
+//Hide error label and styling on click
 $('#zip').click((e) => {
     if ($('#zip').attr("class") === "error")
         {
@@ -398,6 +461,7 @@ $('#zip').click((e) => {
         }
 });
 
+//Hide error label and styling on click
 $('#cvv').click((e) => {
     if ($('#cvv').attr("class") === "error")
         {
@@ -406,17 +470,24 @@ $('#cvv').click((e) => {
         }
 });
 
-//check flag to prevent initial focus out with error
-$('#name').focusin((e) => {
-    check = true;
-});
+//////////////
+//FOCUS OUTS//
+//////////////
 
 $('#name').focusout((e) => {
-    const name = $('#name').val();
-    if (!isValidName(name) && check)
-    {
-        $('#name').addClass("error");
-        location.hash = 'alpha'; location.hash = '#top';
-        $('#name').val("Please enter a valid name!");
-    }
+    setTimeout(function() { 
+        const name = $('#name').val();
+        displayNameError(name);}, 200);
+});
+
+$('#mail').focusout((e) => {
+    setTimeout(function() { 
+        const email = $('#mail').val();
+        displayEmailError(email);}, 200);
+});
+
+$('#other-title').focusout((e) => {
+    setTimeout(function() { 
+        const otherTitle = $('#other-title').val();
+        displayOtherTitleError(otherTitle);}, 200);
 });
